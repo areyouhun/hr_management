@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -22,6 +23,7 @@ public class EmployeeDao {
 	private static final String COL_DEPT_CODE = "DEPT_CODE";
 	private static final String EQUAL = "=";
 	private static final String LIKE = "LIKE";
+	private static final String IN = "IN";
 	
 	private final Properties sql;
 	
@@ -60,18 +62,24 @@ public class EmployeeDao {
 		return employees;
 	}
 	
-	public List<Employee> selectEmployeesBydeptCode(Connection conn, String deptCode) {
+	public List<Employee> selectEmployeesBydeptCode(Connection conn, List<String> deptCodes) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Employee> employees = new ArrayList<>();
 		
 		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
 		query = query.replace(COL, COL_DEPT_CODE);
-		query = query.replace(SYNTAX, EQUAL);
+		query = query.replace(SYNTAX, IN);
+		query = query.replace("?", "(");
+		String placeHolders = String.join(",", Collections.nCopies(deptCodes.size(), "?"));
+		query = query + placeHolders + ")";
 		
 		try {
 			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, deptCode);
+			int index = 1;
+			for (String deptCode : deptCodes) {
+				pstmt.setString(index++, deptCode);
+			}
 			rs = pstmt.executeQuery();
 			
 			while (rs.next()) {
