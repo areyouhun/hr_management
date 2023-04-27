@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import com.bs.model.dto.Department;
@@ -22,6 +24,7 @@ public class DepartmentDao {
 	private static final String COL_DEPT_TITLE = "DEPT_TITLE";
 	private static final String COL_LOCATION_ID = "LOCATION_ID";
 	private static final String EQUAL = "=";
+	private static final String LIKE = "LIKE";
 	
 	private final Properties sql;
 	
@@ -61,6 +64,32 @@ public class DepartmentDao {
 			JdbcTemplate.close(rs);
 			JdbcTemplate.close(pstmt);
 		}
+	}
+	
+	public List<String> findDeptIdByDeptTitle(Connection conn, String deptTitle) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<String> deptIds = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_DEPT) + " " + sql.getProperty(WHERE);
+		query = query.replace(COL, COL_DEPT_TITLE);
+		query = query.replace(SYNTAX, LIKE); 
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, "%" + deptTitle + "%");
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				deptIds.add(rs.getString("DEPT_ID"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return deptIds;
 	}
 	
 	private Department generateDepartment(ResultSet rs) throws SQLException {
