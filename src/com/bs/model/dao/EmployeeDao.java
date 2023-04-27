@@ -16,6 +16,12 @@ import com.bs.service.JdbcTemplate;
 public class EmployeeDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
 	private static final String SELECT_ALL_FROM_EMPLOYEE = "selectAllFromEmployee";
+	private static final String WHERE = "where";
+	private static final String COL = "#COL";
+	private static final String SYNTAX = "#SYNTAX";
+	private static final String COL_DEPT_CODE = "DEPT_CODE";
+	private static final String EQUAL = "=";
+	private static final String LIKE = "LIKE";
 	
 	private final Properties sql;
 	
@@ -42,6 +48,32 @@ public class EmployeeDao {
 			pstmt = conn.prepareStatement(sql.getProperty(SELECT_ALL_FROM_EMPLOYEE));
 			rs = pstmt.executeQuery();
 
+			while (rs.next()) {
+				employees.add(generateEmployee(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return employees;
+	}
+	
+	public List<Employee> selectEmployeesBydeptCode(Connection conn, String deptCode) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Employee> employees = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
+		query = query.replace(COL, COL_DEPT_CODE);
+		query = query.replace(SYNTAX, EQUAL);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, deptCode);
+			rs = pstmt.executeQuery();
+			
 			while (rs.next()) {
 				employees.add(generateEmployee(rs));
 			}
