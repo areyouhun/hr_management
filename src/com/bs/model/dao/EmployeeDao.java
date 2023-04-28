@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,7 @@ import com.bs.model.dto.Employee;
 public class EmployeeDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
 	private static final String SELECT_ALL_FROM_EMPLOYEE = "selectAllFromEmployee";
+	private static final String INSERT_INTO_EMPLOYEES = "insertIntoEmployees";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
 	private static final String SYNTAX = "#SYNTAX";
@@ -181,6 +183,37 @@ public class EmployeeDao {
 		
 		return employees;
 	} 
+	
+	public int insertEmployee(Connection conn, Employee employee) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(INSERT_INTO_EMPLOYEES);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, employee.getEmpId());
+			pstmt.setString(2, employee.getEmpName());
+			pstmt.setString(3, employee.getEmpNo());
+			pstmt.setString(4, employee.getEmail());
+			pstmt.setString(5, employee.getPhone());
+			pstmt.setString(6, employee.getDeptCode());
+			pstmt.setString(7, employee.getJobCode());
+			pstmt.setString(8, employee.getSalLevel());
+			pstmt.setInt(9, employee.getSalary());
+			pstmt.setDouble(10, employee.getBonus());
+			if (employee.getManagerId().equals("X")) {
+				pstmt.setNull(11, Types.NULL);
+			} else {
+				pstmt.setString(11, employee.getManagerId());
+			}
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {
 		return new Employee.Builder()
