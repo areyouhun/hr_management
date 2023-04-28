@@ -10,6 +10,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.bs.common.JdbcTemplate;
@@ -195,7 +196,7 @@ public class EmployeeDao {
 		return employees;
 	} 
 	
-	public int insertEmployee(Connection conn, Employee employee) {
+	public int insertEmployee(Connection conn, Employee employee, Map<String, String> codes) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
@@ -207,8 +208,8 @@ public class EmployeeDao {
 			pstmt.setString(3, employee.getEmpNo());
 			pstmt.setString(4, employee.getEmail());
 			pstmt.setString(5, employee.getPhone());
-			pstmt.setString(6, employee.getDeptCode());
-			pstmt.setString(7, employee.getJobCode());
+			pstmt.setString(6, codes.get("DEPT_CODE"));
+			pstmt.setString(7, codes.get("JOB_CODE"));
 			pstmt.setString(8, employee.getSalLevel());
 			pstmt.setInt(9, employee.getSalary());
 			pstmt.setDouble(10, employee.getBonus());

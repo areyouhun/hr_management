@@ -2,6 +2,7 @@ package com.bs.service;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 
 import com.bs.common.JdbcTemplate;
 import com.bs.common.SalaryConditions;
@@ -82,5 +83,55 @@ public class Service {
 		});
 		JdbcTemplate.close(conn);
 		return employees;
+	}
+	
+	public int insertIntoEmployee(Employee employee, Map<String, String> titles) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = 0;
+		employeeDao.updateSalaryLevel(conn, employee);
+		Map<String, String> codes = Map.of("DEPT_CODE", departmentDao.findDeptIdByDeptTitle(conn, titles.get("DEPT_TITLE")).get(0), 
+										"JOB_CODE", jobDao.findJobCodeByJobName(conn, titles.get("JOB_NAME")).get(0));
+		result = employeeDao.insertEmployee(conn, employee, codes);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
+	}
+	
+	public int updateEmployee(Employee employee, Map<String, String> titles) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = 0;
+		Map<String, String> codes = Map.of("DEPT_CODE", departmentDao.findDeptIdByDeptTitle(conn, titles.get("DEPT_TITLE")).get(0), 
+										"JOB_CODE", jobDao.findJobCodeByJobName(conn, titles.get("JOB_NAME")).get(0));
+		
+		employeeDao.updateSalaryLevel(conn, employee);
+		employeeDao.updateDeptCode(conn, employee, codes.get("DEPT_CODE"));
+		employeeDao.updateJobCode(conn, employee, codes.get("JOB_CODE"));
+		result = employeeDao.updateEmployee(conn, employee);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
+	}
+	
+	public int deleteEmployee(String empId) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = employeeDao.deleteEmployee(conn, empId);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
 	}
 }
