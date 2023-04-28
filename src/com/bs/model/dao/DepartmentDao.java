@@ -18,6 +18,7 @@ public class DepartmentDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
 	private static final String SELECT_ALL_FROM_DEPT = "selectAllFromDept";
 	private static final String INSERT_INTO_DEPARTMENT = "insertIntoDepartments";
+	private static final String UPDATE_DEPARTMENT = "updateDepartment";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
 	private static final String SYNTAX = "#SYNTAX";
@@ -103,6 +104,24 @@ public class DepartmentDao {
 			pstmt.setString(1, department.getDeptId());
 			pstmt.setString(2, department.getDeptTitle());
 			pstmt.setString(3, department.getLocationId());
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public int updateDepartment(Connection conn, Department department) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(UPDATE_DEPARTMENT);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, department.getDeptTitle());
+			pstmt.setString(2, department.getDeptId());
 			result = pstmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
