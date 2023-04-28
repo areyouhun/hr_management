@@ -19,6 +19,7 @@ import com.bs.model.dto.Employee;
 public class EmployeeDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
 	private static final String SELECT_ALL_FROM_EMPLOYEE = "selectAllFromEmployee";
+	private static final String SELECT_ALL_FROM_SAL_GRADE = "selectAllFromSalGrade";
 	private static final String INSERT_INTO_EMPLOYEES = "insertIntoEmployees";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
@@ -30,6 +31,8 @@ public class EmployeeDao {
 	private static final String EQUAL = "=";
 	private static final String LIKE = "LIKE";
 	private static final String IN = "IN";
+	private static final String BETWEEN = "BETWEEN";
+	private static final String MIN_SAL_AND_MAX_SAL = "MIN_SAL AND MAX_SAL";
 	
 	private final Properties sql;
 	
@@ -213,6 +216,36 @@ public class EmployeeDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return result;
+	}
+	
+	public void updateSalaryLevel(Connection conn, Employee employee) {
+		employee.setSalLevel(findSalaryLevelBy(conn, employee));
+	}
+	
+	private String findSalaryLevelBy(Connection conn, Employee employee) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String level = "";
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_SAL_GRADE) + " " + sql.getProperty(WHERE);
+		query = query.replace("#COL", String.valueOf(employee.getSalary()));
+		query = query.replace("#SYNTAX", BETWEEN);
+		query = query.replace("?", MIN_SAL_AND_MAX_SAL);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				level = rs.getString("SAL_LEVEL");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return level;
 	}
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {
