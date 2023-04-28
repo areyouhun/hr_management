@@ -11,6 +11,7 @@ import com.bs.model.dao.EmployeeDao;
 import com.bs.model.dao.JobDao;
 import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
+import com.bs.model.dto.Job;
 
 public class Service {
 	private static Service service = new Service();
@@ -162,13 +163,56 @@ public class Service {
 		return result;
 	}
 	
-	public int deleteDepartment(String deptTitle) {
+	public int deleteFromDepartment(String deptTitle) {
 		Connection conn = JdbcTemplate.getConnection();
 		List<String> deptCodes = departmentDao.findDeptIdByDeptTitle(conn, deptTitle);
 		
 		int commitCount = 0;
 		for (String deptCode : deptCodes) {
 			if (departmentDao.deleteDepartment(conn, deptCode) > 0) {
+				commitCount++;
+				JdbcTemplate.commit(conn);
+			} else {
+				JdbcTemplate.rollback(conn);
+			}
+		}
+		JdbcTemplate.close(conn);
+		return commitCount;
+	}
+	
+	public int insertIntoJob(Job job) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = jobDao.insertJob(conn, job);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
+	}
+	
+	public int updateJob(Job job) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = jobDao.updateJob(conn, job);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
+	}
+	
+	public int deleteFromJob(String jobName) {
+		Connection conn = JdbcTemplate.getConnection();
+		List<String> jobCodes = jobDao.findJobCodeByJobName(conn, jobName);
+		
+		int commitCount = 0;
+		for (String jobCode : jobCodes) {
+			if (jobDao.deleteJob(conn, jobCode) > 0) {
 				commitCount++;
 				JdbcTemplate.commit(conn);
 			} else {
