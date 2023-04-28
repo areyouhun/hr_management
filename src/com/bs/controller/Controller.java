@@ -82,7 +82,7 @@ public class Controller {
 				outputView.printEmployees(employeesByJob);
 				break;
 			case 3:
-				List<Employee> employeesByName = service.selectFromEmployeeByJobName(inputView.readName());
+				List<Employee> employeesByName = service.selectFromEmployeeByName(inputView.readName());
 				outputView.printEmployees(employeesByName);
 				break;
 			case 4:
