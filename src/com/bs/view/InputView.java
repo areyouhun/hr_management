@@ -88,7 +88,7 @@ public class InputView {
 		
 		String managerId = readInput("매니저 아이디 (없으면 'X' 입력) : ");
 		
-		while (!managerId.matches("^2[0-1][0-9]$") || !managerId.matches("^22[0-2]$") || !managerId.matches("^[xX]$")) {
+		while (!managerId.matches("^2[0-1][0-9]$") && !managerId.matches("^22[0-2]$") && !managerId.matches("^[xX]$")) {
 			System.out.print("입력값이 올바르지 않습니다.");
 			managerId = readInput("매니저 아이디 (없으면 'X' 입력) : ");
 		}
@@ -124,7 +124,7 @@ public class InputView {
 		
 		int salary = Integer.parseInt(readInput("변경된 급여 : "));
 		
-		String phone = readInput("변경된 전화번호 : ");
+		String phone = readInput("변경된 전화번호 ('-' 빼고 입력) : ").replace("-", "");
 		
 		String email = readInput("변경된 이메일 : ");
 		

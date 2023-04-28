@@ -52,9 +52,8 @@ public class Controller {
 				break;
 			case 5:
 				inputView.header("======== 사원 삭제 ========");
-				Employee employeeToBeDeleted = inputView.readEmployeeToBeUpdated();
-				Map<String, String> titlesToBeRenamed2 = inputView.readTitles("변경된 부서명: ", "변경된 직책명 : ");
-				outputView.printResult(service.insertIntoEmployee(employeeToBeDeleted, titlesToBeRenamed2), "사원 정보 수정 성공", "사원 정보 수정 실패");
+				int numberOfEmployee = service.deleteEmployee(inputView.readEmpId());
+				outputView.printResult(numberOfEmployee, String.format("%d명의 사원 삭제 성공", numberOfEmployee), "사원 삭제 실패");
 				break;
 			case 6:
 				submenuForDept();
