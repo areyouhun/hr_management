@@ -21,6 +21,8 @@ public class EmployeeDao {
 	private static final String SELECT_ALL_FROM_EMPLOYEE = "selectAllFromEmployee";
 	private static final String SELECT_ALL_FROM_SAL_GRADE = "selectAllFromSalGrade";
 	private static final String INSERT_INTO_EMPLOYEES = "insertIntoEmployees";
+	private static final String UPDATE_EMPLOYEE = "updateEmployee";
+	private static final String DELETE_FROM_EMPLOYEE = "deleteFromEmployee";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
 	private static final String SYNTAX = "#SYNTAX";
@@ -218,6 +220,37 @@ public class EmployeeDao {
 		return result;
 	}
 	
+	public int updateEmployee(Connection conn, Employee employee) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(UPDATE_EMPLOYEE);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, employee.getJobCode());
+			pstmt.setString(2, employee.getDeptCode());
+			pstmt.setInt(3, employee.getSalary());
+			pstmt.setString(4, employee.getSalLevel());
+			pstmt.setString(5, employee.getPhone());
+			pstmt.setString(6, employee.getEmail());
+			pstmt.setString(7, employee.getEmpId());
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public void updateDeptCode(Connection conn, Employee employee, String deptCode) {
+		employee.setDeptCode(deptCode);
+	}
+	
+	public void updateJobCode(Connection conn, Employee employee, String jobCode) {
+		employee.setJobCode(jobCode);
+	}
+	
 	public void updateSalaryLevel(Connection conn, Employee employee) {
 		employee.setSalLevel(findSalaryLevelBy(conn, employee));
 	}
@@ -246,6 +279,21 @@ public class EmployeeDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return level;
+	}
+	
+	public int deleteEmployee(Connection conn, String empId) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(DELETE_FROM_EMPLOYEE);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, empId);
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {
