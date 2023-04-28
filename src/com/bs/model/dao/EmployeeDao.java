@@ -79,11 +79,14 @@ public class EmployeeDao {
 		List<Employee> employees = new ArrayList<>();
 		
 		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
+		String placeHolders = String.join(",", Collections.nCopies(deptCodes.size(), "?"));
+		if (placeHolders.isEmpty()) {
+			return employees;
+		}
+		
 		query = query.replace(COL, COL_DEPT_CODE);
 		query = query.replace(SYNTAX, IN);
-		query = query.replace("?", "(");
-		String placeHolders = String.join(",", Collections.nCopies(deptCodes.size(), "?"));
-		query = query + placeHolders + ")";
+		query = query.replace("?", "(" + placeHolders + ")");
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -115,6 +118,9 @@ public class EmployeeDao {
 		query = query.replace("#COL", COL_JOB_CODE);
 		query = query.replace("#SYNTAX", IN);
 		query = query.replace("?", "(" + placeHolders + ")");
+		if (placeHolders.isEmpty()) {
+			return employees;
+		}
 		
 		try {
 			pstmt = conn.prepareStatement(query);
