@@ -9,6 +9,7 @@ import com.bs.common.SalaryConditions;
 import com.bs.model.dao.DepartmentDao;
 import com.bs.model.dao.EmployeeDao;
 import com.bs.model.dao.JobDao;
+import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
 
 public class Service {
@@ -133,5 +134,48 @@ public class Service {
 		}
 		JdbcTemplate.close(conn);
 		return result;
+	}
+	
+	public int insertIntoDepartment(Department department) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = departmentDao.insertDepartment(conn, department);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
+	}
+	
+	public int updateDepartment(Department department) {
+		Connection conn = JdbcTemplate.getConnection();
+		int result = departmentDao.updateDepartment(conn, department);
+		
+		if (result > 0) {
+			JdbcTemplate.commit(conn);
+		} else {
+			JdbcTemplate.rollback(conn);
+		}
+		JdbcTemplate.close(conn);
+		return result;
+	}
+	
+	public int deleteDepartment(String deptTitle) {
+		Connection conn = JdbcTemplate.getConnection();
+		List<String> deptCodes = departmentDao.findDeptIdByDeptTitle(conn, deptTitle);
+		
+		int commitCount = 0;
+		for (String deptCode : deptCodes) {
+			if (departmentDao.deleteDepartment(conn, deptCode) > 0) {
+				commitCount++;
+				JdbcTemplate.commit(conn);
+			} else {
+				JdbcTemplate.rollback(conn);
+			}
+		}
+		JdbcTemplate.close(conn);
+		return commitCount;
 	}
 }
