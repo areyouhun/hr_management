@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import com.bs.model.dto.Employee;
@@ -21,6 +23,7 @@ public class JobDao {
 	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String COL_JOB_NAME = "JOB_NAME";
 	private static final String EQUAL = "=";
+	private static final String LIKE = "LIKE";
 	
 	private final Properties sql;
 	
@@ -60,6 +63,32 @@ public class JobDao {
 			JdbcTemplate.close(rs);
 			JdbcTemplate.close(pstmt);
 		}
+	}
+	
+	public List<String> findJobCodeByJobName(Connection conn, String jobName) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<String> jobCodes = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_JOB) + " " + sql.getProperty(WHERE);
+		query = query.replace("#COL", COL_JOB_NAME);
+		query = query.replace("#SYNTAX", LIKE);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, "%" + jobName + "%");
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				jobCodes.add(rs.getString("JOB_CODE"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return jobCodes;
 	}
 
 	private Job generateJob(ResultSet rs) throws SQLException {
