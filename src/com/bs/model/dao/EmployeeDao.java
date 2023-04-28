@@ -6,26 +6,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import com.bs.common.JdbcTemplate;
+import com.bs.common.SalaryConditions;
 import com.bs.model.dto.Employee;
 
 public class EmployeeDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
 	private static final String SELECT_ALL_FROM_EMPLOYEE = "selectAllFromEmployee";
+	private static final String SELECT_ALL_FROM_SAL_GRADE = "selectAllFromSalGrade";
+	private static final String INSERT_INTO_EMPLOYEES = "insertIntoEmployees";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
 	private static final String SYNTAX = "#SYNTAX";
 	private static final String COL_DEPT_CODE = "DEPT_CODE";
 	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String COL_EMP_NAME = "EMP_NAME";
+	private static final String COL_SALARY = "SALARY";
 	private static final String EQUAL = "=";
 	private static final String LIKE = "LIKE";
 	private static final String IN = "IN";
+	private static final String BETWEEN = "BETWEEN";
+	private static final String MIN_SAL_AND_MAX_SAL = "MIN_SAL AND MAX_SAL";
 	
 	private final Properties sql;
 	
@@ -151,6 +158,94 @@ public class EmployeeDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return employees;
+	}
+	
+	public List<Employee> selectEmployeesBySalary(Connection conn, int salary, SalaryConditions condition) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Employee> employees = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
+		query = query.replace("#COL", COL_SALARY);
+		query = query.replace("#SYNTAX", condition.getSign());
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setInt(1, salary);
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				employees.add(generateEmployee(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		
+		return employees;
+	} 
+	
+	public int insertEmployee(Connection conn, Employee employee) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(INSERT_INTO_EMPLOYEES);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, employee.getEmpId());
+			pstmt.setString(2, employee.getEmpName());
+			pstmt.setString(3, employee.getEmpNo());
+			pstmt.setString(4, employee.getEmail());
+			pstmt.setString(5, employee.getPhone());
+			pstmt.setString(6, employee.getDeptCode());
+			pstmt.setString(7, employee.getJobCode());
+			pstmt.setString(8, employee.getSalLevel());
+			pstmt.setInt(9, employee.getSalary());
+			pstmt.setDouble(10, employee.getBonus());
+			if (employee.getManagerId().equals("X")) {
+				pstmt.setNull(11, Types.NULL);
+			} else {
+				pstmt.setString(11, employee.getManagerId());
+			}
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public void updateSalaryLevel(Connection conn, Employee employee) {
+		employee.setSalLevel(findSalaryLevelBy(conn, employee));
+	}
+	
+	private String findSalaryLevelBy(Connection conn, Employee employee) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String level = "";
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_SAL_GRADE) + " " + sql.getProperty(WHERE);
+		query = query.replace("#COL", String.valueOf(employee.getSalary()));
+		query = query.replace("#SYNTAX", BETWEEN);
+		query = query.replace("?", MIN_SAL_AND_MAX_SAL);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				level = rs.getString("SAL_LEVEL");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return level;
 	}
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {
