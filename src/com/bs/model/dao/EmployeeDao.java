@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import com.bs.model.dto.Employee;
 import com.bs.service.JdbcTemplate;
@@ -21,6 +22,7 @@ public class EmployeeDao {
 	private static final String COL = "#COL";
 	private static final String SYNTAX = "#SYNTAX";
 	private static final String COL_DEPT_CODE = "DEPT_CODE";
+	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String EQUAL = "=";
 	private static final String LIKE = "LIKE";
 	private static final String IN = "IN";
@@ -79,6 +81,37 @@ public class EmployeeDao {
 			int index = 1;
 			for (String deptCode : deptCodes) {
 				pstmt.setString(index++, deptCode);
+			}
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				employees.add(generateEmployee(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return employees;
+	}
+	
+	public List<Employee> selectEmployeesByJobCodes(Connection conn, List<String>jobCodes) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Employee> employees = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
+		String placeHolders = String.join(",", Collections.nCopies(jobCodes.size(), "?"));
+		query = query.replace("#COL", COL_JOB_CODE);
+		query = query.replace("#SYNTAX", IN);
+		query = query.replace("?", "(" + placeHolders + ")");
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			int index = 1;
+			for (String jobCode : jobCodes) {
+				pstmt.setString(index++, jobCode);
 			}
 			rs = pstmt.executeQuery();
 			
