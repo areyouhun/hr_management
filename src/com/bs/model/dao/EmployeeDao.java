@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.bs.common.JdbcTemplate;
+import com.bs.common.SalaryConditions;
 import com.bs.model.dto.Employee;
 
 public class EmployeeDao {
@@ -23,6 +24,7 @@ public class EmployeeDao {
 	private static final String COL_DEPT_CODE = "DEPT_CODE";
 	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String COL_EMP_NAME = "EMP_NAME";
+	private static final String COL_SALARY = "SALARY";
 	private static final String EQUAL = "=";
 	private static final String LIKE = "LIKE";
 	private static final String IN = "IN";
@@ -152,6 +154,33 @@ public class EmployeeDao {
 		}
 		return employees;
 	}
+	
+	public List<Employee> selectEmployeesBySalary(Connection conn, int salary, SalaryConditions condition) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Employee> employees = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
+		query = query.replace("#COL", COL_SALARY);
+		query = query.replace("#SYNTAX", condition.getSign());
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setInt(1, salary);
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				employees.add(generateEmployee(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		
+		return employees;
+	} 
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {
 		return new Employee.Builder()
