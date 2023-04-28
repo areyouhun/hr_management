@@ -22,6 +22,7 @@ public class EmployeeDao {
 	private static final String SELECT_ALL_FROM_SAL_GRADE = "selectAllFromSalGrade";
 	private static final String INSERT_INTO_EMPLOYEES = "insertIntoEmployees";
 	private static final String UPDATE_EMPLOYEE = "updateEmployee";
+	private static final String DELETE_FROM_EMPLOYEE = "deleteFromEmployee";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
 	private static final String SYNTAX = "#SYNTAX";
@@ -278,6 +279,21 @@ public class EmployeeDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return level;
+	}
+	
+	public int deleteEmployee(Connection conn, String empId) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(DELETE_FROM_EMPLOYEE);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, empId);
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {
