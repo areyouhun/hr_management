@@ -11,8 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import com.bs.common.JdbcTemplate;
 import com.bs.model.dto.Employee;
-import com.bs.service.JdbcTemplate;
 
 public class EmployeeDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";

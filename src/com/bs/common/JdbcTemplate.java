@@ -1,4 +1,4 @@
-package com.bs.service;
+package com.bs.common;
 
 import java.io.FileReader;
 import java.io.IOException;

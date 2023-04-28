@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.bs.common.JdbcTemplate;
 import com.bs.model.dto.Employee;
 import com.bs.model.dto.Job;
-import com.bs.service.JdbcTemplate;
 
 public class JobDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
