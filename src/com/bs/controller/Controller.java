@@ -2,6 +2,7 @@ package com.bs.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.bs.common.SalaryConditions;
 import com.bs.model.dto.Department;
@@ -87,7 +88,7 @@ public class Controller {
 				break;
 			case 4:
 				int salary = inputView.readSalary();
-				SalaryConditions searchCondition = getSalaryCondition(inputView.readSearchCondition());
+				SalaryConditions searchCondition = getSalaryCondition(() -> inputView.readSearchCondition());
 				List<Employee> employeesBySalary = service.selectFromEmployeeBySalary(salary, searchCondition);
 				outputView.printEmployees(employeesBySalary);
 				break;
@@ -154,12 +155,12 @@ public class Controller {
 		}
 	}
 	
-	private SalaryConditions getSalaryCondition(String letter) {
+	private SalaryConditions getSalaryCondition(Supplier<String> inputReader) {
 		try {
-			return SalaryConditions.getSalaryConditionBy(letter);
+			return SalaryConditions.getSalaryConditionBy(inputReader.get());
 		} catch (IllegalArgumentException e) {
 			System.out.println(e.getMessage());
-			return getSalaryCondition(letter);
+			return getSalaryCondition(inputReader);
 		}
 	}
 }

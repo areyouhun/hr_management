@@ -60,7 +60,11 @@ public class InputView {
 	}
 	
 	public String readSearchCondition() {
-		return readInput("입력된 급여 이상의 급여를 받는 사원을 찾고자 한다면 'U', 그렇지 않다면 'D'를 입력해주세요 : ").toUpperCase();
+		String letter = readInput("입력된 급여 이상의 급여를 받는 사원을 찾고자 한다면 'U', 그렇지 않다면 'D'를 입력해주세요 : ");
+		if (letter.matches("^[a-z]$")) {
+			letter = letter.toUpperCase();
+		}
+		return letter;
 	}
 	
 	public void header(String headerMsg) {
