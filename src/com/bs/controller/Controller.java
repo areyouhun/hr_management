@@ -13,6 +13,9 @@ import com.bs.view.InputView;
 import com.bs.view.OutputView;
 
 public class Controller {
+	private static final String BACK_TO_MAIN_MENU = "메인메뉴로 돌아갑니다.";
+	private static final String INVALID_INPUT = "입력값이 올바르지 않습니다. 다시 입력해주세요.";
+	
 	private static Controller controller = new Controller();
 	
 	private final Service service;
@@ -52,8 +55,8 @@ public class Controller {
 				break;
 			case 5:
 				inputView.header("======== 사원 삭제 ========");
-				int numberOfEmployee = service.deleteEmployee(inputView.readEmpId());
-				outputView.printResult(numberOfEmployee, String.format("%d명의 사원 삭제 성공", numberOfEmployee), "사원 삭제 실패");
+				int result = service.deleteEmployee(inputView.readEmpId());
+				outputView.printResult(result, "사원 삭제 성공", "사원 삭제 실패");
 				break;
 			case 6:
 				submenuForDept();
@@ -62,11 +65,12 @@ public class Controller {
 				submenuForJob();
 				break;
 			case 0:
-				System.out.println("프로그램을 종료합니다.");
+				outputView.printMsg("프로그램을 종료합니다.");
 				return;
 			default:
-				System.out.println("입력값이 올바르지 않습니다. 다시 입력해주세요.");
+				outputView.printMsg(INVALID_INPUT);
 			}
+			System.out.println();
 		}
 	}
 	
@@ -92,11 +96,12 @@ public class Controller {
 				outputView.printEmployees(employeesBySalary);
 				break;
 			case 0:
-				System.out.println("상위 메뉴로 돌아갑니다.");
+				outputView.printMsg(BACK_TO_MAIN_MENU);
 				return;
 			default:
-				System.out.println("입력값이 올바르지 않습니다. 다시 입력해주세요.");
+				outputView.printMsg(INVALID_INPUT);
 			}
+			System.out.println();
 		}
 	}
 	
@@ -116,14 +121,16 @@ public class Controller {
 			case 3:
 				inputView.header("========== 부서 삭제 ==========");
 				String deptTitle = inputView.readDeptTitle("삭제하려는 부서명을 입력해주세요 : ");
-				outputView.printResult(service.deleteFromDepartment(deptTitle), "부서 삭제 성공", "부서 삭제 실패");
+				int numberOfDepartment = service.deleteFromDepartment(deptTitle);
+				outputView.printResult(numberOfDepartment, String.format("%d개의 부서 삭제 성공", numberOfDepartment), "부서 삭제 실패");
 				break;
 			case 0:
-				System.out.println("상위 메뉴로 돌아갑니다.");
+				outputView.printMsg(BACK_TO_MAIN_MENU);
 				return;
 			default:
-				System.out.println("입력값이 올바르지 않습니다. 다시 입력해주세요.");
+				outputView.printMsg(INVALID_INPUT);
 			}
+			System.out.println();
 		}
 	}
 	
@@ -146,11 +153,12 @@ public class Controller {
 				outputView.printResult(service.deleteFromJob(jobName), "직책 삭제 성공", "직책 삭제 실패");
 				break;
 			case 0:
-				System.out.println("상위 메뉴로 돌아갑니다.");
+				outputView.printMsg(BACK_TO_MAIN_MENU);
 				return;
 			default:
-				System.out.println("입력값이 올바르지 않습니다. 다시 입력해주세요.");
+				outputView.printMsg(INVALID_INPUT);
 			}
+			System.out.println();
 		}
 	}
 	

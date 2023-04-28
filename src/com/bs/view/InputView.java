@@ -141,7 +141,7 @@ public class InputView {
 	}
 	
 	public int readSubMenuForDept() {
-		System.out.println("====== 부서 관리 ======");
+		System.out.println("========== 부서 관리 ==========");
 		System.out.println("1. 신규 부서 등록");
 		System.out.println("2. 부서 정보 수정");
 		System.out.println("3. 부서 삭제");
@@ -150,7 +150,7 @@ public class InputView {
 	}
 	
 	public int readSubMenuForJob() {
-		System.out.println("====== 직책 관리 ======");
+		System.out.println("========== 직책 관리 ==========");
 		System.out.println("1. 신규 직책 등록");
 		System.out.println("2. 직책 정보 수정");
 		System.out.println("3. 직책 삭제");
@@ -183,7 +183,7 @@ public class InputView {
 	public Job readJobToBeUpdated() {
 		Job job = new Job();
 		job.setJobCode(readInput("수정할 직책코드 : "));
-		job.setJobName(readInput("수정할 직책명 : "));
+		job.setJobName(readInput("변경된 직책명 : "));
 		return job;
 	}
 	
