@@ -11,14 +11,19 @@ import java.util.List;
 import java.util.Properties;
 
 import com.bs.common.JdbcTemplate;
+import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
 import com.bs.model.dto.Job;
 
 public class JobDao {
 	private static final String SQL_PATH = "/sql/board/board_sql.properties";
 	private static final String SELECT_ALL_FROM_JOB = "selectAllFromJob";
+	private static final String INSERT_INTO_JOB = "insertIntoJob";
+	private static final String UPDATE_JOB = "updateJob";
+	private static final String DELETE_FROM = "deleteFrom";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
+	private static final String TABLE_NAME = "JOB";
 	private static final String SYNTAX = "#SYNTAX";
 	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String COL_JOB_NAME = "JOB_NAME";
@@ -89,6 +94,63 @@ public class JobDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return jobCodes;
+	}
+	
+	public int insertJob(Connection conn, Job job) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(INSERT_INTO_JOB);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, job.getJobCode());
+			pstmt.setString(2, job.getJobName());
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public int updateJob(Connection conn, Job job) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(UPDATE_JOB);
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, job.getJobName());
+			pstmt.setString(2, job.getJobCode());
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public int deleteJob(Connection conn, String jobCode) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(DELETE_FROM) + " " + sql.getProperty(WHERE);
+		query = query.replace("#TABLE", TABLE_NAME);
+		query = query.replace("#COL", COL_JOB_CODE);
+		query = query.replace("#SYNTAX", EQUAL);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, jobCode);
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
 	}
 
 	private Job generateJob(ResultSet rs) throws SQLException {
