@@ -19,8 +19,10 @@ public class DepartmentDao {
 	private static final String SELECT_ALL_FROM_DEPT = "selectAllFromDept";
 	private static final String INSERT_INTO_DEPARTMENT = "insertIntoDepartments";
 	private static final String UPDATE_DEPARTMENT = "updateDepartment";
+	private static final String DELETE_FROM = "deleteFrom";
 	private static final String WHERE = "where";
 	private static final String COL = "#COL";
+	private static final String TABLE_NAME = "DEPARTMENT";
 	private static final String SYNTAX = "#SYNTAX";
 	private static final String COL_DEPT_ID = "DEPT_ID";
 	private static final String COL_DEPT_TITLE = "DEPT_TITLE";
@@ -122,6 +124,27 @@ public class DepartmentDao {
 			pstmt = conn.prepareStatement(query);
 			pstmt.setString(1, department.getDeptTitle());
 			pstmt.setString(2, department.getDeptId());
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(pstmt);
+		}
+		return result;
+	}
+	
+	public int deleteDepartment(Connection conn, String deptId) {
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String query = sql.getProperty(DELETE_FROM) + " " + sql.getProperty(WHERE);
+		query = query.replace("#TABLE", TABLE_NAME);
+		query = query.replace("#COL", COL_DEPT_ID);
+		query = query.replace("#SYNTAX", EQUAL);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, deptId);
 			result = pstmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
