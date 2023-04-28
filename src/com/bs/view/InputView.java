@@ -3,7 +3,9 @@ package com.bs.view;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
+import com.bs.model.dto.Job;
 
 public class InputView {
 	private static InputView inputView = new InputView();
@@ -41,12 +43,12 @@ public class InputView {
 		return Integer.parseInt(readInput("번호 입력 : "));
 	}
 	
-	public String readDeptTitle() {
-		return readInput("찾고자 하는 사원의 부서명을 입력해주세요 : ");
+	public String readDeptTitle(String msg) {
+		return readInput(msg);
 	}
 	
-	public String readJobName() {
-		return readInput("찾고자 하는 사원의 직책명을 입력해주세요 : ");
+	public String readJobName(String msg) {
+		return readInput(msg);
 	}
 	
 	public String readName() {
@@ -131,7 +133,6 @@ public class InputView {
 	}
 	
 	public String readEmpId() {
-		System.out.println("======= 사원 정보 삭제 =======");
 		return readInput("삭제하려는 사원의 사원번호를 입력해주세요 : ");
 	}
 	
@@ -151,6 +152,35 @@ public class InputView {
 		System.out.println("3. 직책 삭제");
 		System.out.println("0. 상위 메뉴로 돌아가기");
 		return Integer.parseInt(readInput("번호 입력 : "));
+	}
+	
+	public Department readDepartment() {
+		Department department = new Department();
+		department.setDeptId(readInput("부서코드 : "));
+		department.setDeptTitle(readInput("부서명 : "));
+		department.setLocationId(readInput("지역코드 : "));
+		return department;
+	}
+	
+	public Department readDepartmentToBeUpdated() {
+		Department department = new Department();
+		department.setDeptId(readInput("수정할 부서코드 : "));
+		department.setDeptTitle(readInput("변경된 부서명 : "));
+		return department;
+	}
+	
+	public Job readJob() {
+		Job job = new Job();
+		job.setJobCode(readInput("직책코드 : "));
+		job.setJobName(readInput("직책명 : "));
+		return job;
+	}
+	
+	public Job readJobToBeUpdated() {
+		Job job = new Job();
+		job.setJobCode(readInput("수정할 직책코드 : "));
+		job.setJobName(readInput("수정할 직책명 : "));
+		return job;
 	}
 	
 	private String readInput(String msg) {

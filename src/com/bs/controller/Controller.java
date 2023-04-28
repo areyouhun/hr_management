@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.bs.common.SalaryConditions;
+import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
+import com.bs.model.dto.Job;
 import com.bs.service.Service;
 import com.bs.view.InputView;
 import com.bs.view.OutputView;
@@ -72,15 +74,15 @@ public class Controller {
 		while (true) {
 			switch (inputView.readSubMenuForEmployee()) {
 			case 1:
-				List<Employee> employeesByDept = service.selectFromEmployeeByDeptTitle(inputView.readDeptTitle());
+				List<Employee> employeesByDept = service.selectFromEmployeeByDeptTitle(inputView.readDeptTitle("찾고자 하는 사원의 부서명을 입력해주세요 : "));
 				outputView.printEmployees(employeesByDept);
 				break;
 			case 2:
-				List<Employee> employeesByJob = service.selectFromEmployeeByJobName(inputView.readJobName());
+				List<Employee> employeesByJob = service.selectFromEmployeeByJobName(inputView.readJobName("찾고자 하는 사원의 직책명을 입력해주세요 : "));
 				outputView.printEmployees(employeesByJob);
 				break;
 			case 3:
-				List<Employee> employeesByName = service.selectFromEmployeeByJobName(inputView.readJobName());
+				List<Employee> employeesByName = service.selectFromEmployeeByJobName(inputView.readName());
 				outputView.printEmployees(employeesByName);
 				break;
 			case 4:
@@ -102,10 +104,19 @@ public class Controller {
 		while (true) {
 			switch (inputView.readSubMenuForDept()) {
 			case 1:
+				inputView.header("======== 신규 부서 등록 ========");
+				Department newDepartment = inputView.readDepartment();
+				outputView.printResult(service.insertIntoDepartment(newDepartment), "신규 부서 등록 성공", "신규 부서 등록 실패");
 				break;
 			case 2:
+				inputView.header("======== 부서 정보 수정 ========");
+				Department departmentToBeUpdated = inputView.readDepartmentToBeUpdated();
+				outputView.printResult(service.updateDepartment(departmentToBeUpdated), "부서 정보 수정 성공", "부서 정보 수정 실패");
 				break;
 			case 3:
+				inputView.header("========== 부서 삭제 ==========");
+				String deptTitle = inputView.readDeptTitle("삭제하려는 부서명을 입력해주세요 : ");
+				outputView.printResult(service.deleteFromDepartment(deptTitle), "부서 삭제 성공", "부서 삭제 실패");
 				break;
 			case 0:
 				System.out.println("상위 메뉴로 돌아갑니다.");
@@ -120,10 +131,19 @@ public class Controller {
 		while (true) {
 			switch (inputView.readSubMenuForJob()) {
 			case 1:
+				inputView.header("======== 신규 직책 등록 ========");
+				Job newJob = inputView.readJob();
+				outputView.printResult(service.insertIntoJob(newJob), "신규 직책 등록 성공", "신규 직책 등록 실패");
 				break;
 			case 2:
+				inputView.header("======== 직책 정보 수정 ========");
+				Job JobToBeUpdated = inputView.readJobToBeUpdated();
+				outputView.printResult(service.updateJob(JobToBeUpdated), "직책 정보 수정 성공", "직책 정보 수정 실패");
 				break;
 			case 3:
+				inputView.header("========== 직책 삭제 ==========");
+				String jobName = inputView.readJobName("삭제하려는 직책명을 입력해주세요 : ");
+				outputView.printResult(service.deleteFromJob(jobName), "직책 삭제 성공", "직책 삭제 실패");
 				break;
 			case 0:
 				System.out.println("상위 메뉴로 돌아갑니다.");
