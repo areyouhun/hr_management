@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import com.bs.model.dto.Employee;
 import com.bs.service.JdbcTemplate;
@@ -23,6 +22,7 @@ public class EmployeeDao {
 	private static final String SYNTAX = "#SYNTAX";
 	private static final String COL_DEPT_CODE = "DEPT_CODE";
 	private static final String COL_JOB_CODE = "JOB_CODE";
+	private static final String COL_EMP_NAME = "EMP_NAME";
 	private static final String EQUAL = "=";
 	private static final String LIKE = "LIKE";
 	private static final String IN = "IN";
@@ -113,6 +113,32 @@ public class EmployeeDao {
 			for (String jobCode : jobCodes) {
 				pstmt.setString(index++, jobCode);
 			}
+			rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				employees.add(generateEmployee(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			JdbcTemplate.close(rs);
+			JdbcTemplate.close(pstmt);
+		}
+		return employees;
+	}
+	
+	public List<Employee> selectEmployeesByName(Connection conn, String name) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Employee> employees = new ArrayList<>();
+		
+		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
+		query = query.replace("#COL", COL_EMP_NAME);
+		query = query.replace("#SYNTAX", LIKE);
+		
+		try {
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, "%" + name + "%");
 			rs = pstmt.executeQuery();
 			
 			while (rs.next()) {
