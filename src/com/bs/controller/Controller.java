@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import com.bs.common.SalaryConditions;
+import com.bs.common.SearchConditions;
 import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
 import com.bs.model.dto.Job;
@@ -51,11 +51,11 @@ public class Controller {
 				inputView.header("======== 사원 정보 수정 ========");
 				Employee employeeToBeUpdated = inputView.readEmployeeToBeUpdated();
 				Map<String, String> titlesToBeRenamed = inputView.readTitles("새로운 부서명: ", "새로운 직책명 : ");
-				outputView.printResult(service.updateEmployee(employeeToBeUpdated, titlesToBeRenamed), "사원 정보 수정 성공", "사원 정보 수정 실패");
+				outputView.printResult(service.updateEmployeeBy(employeeToBeUpdated, titlesToBeRenamed), "사원 정보 수정 성공", "사원 정보 수정 실패");
 				break;
 			case 5:
 				inputView.header("======== 사원 삭제 ========");
-				int result = service.deleteEmployee(inputView.readEmpId());
+				int result = service.deleteFromEmployeeBy(inputView.readEmpId());
 				outputView.printResult(result, "사원 삭제 성공", "사원 삭제 실패");
 				break;
 			case 6:
@@ -78,11 +78,11 @@ public class Controller {
 		while (true) {
 			switch (inputView.readSubMenuForEmployee()) {
 			case 1:
-				List<Employee> employeesByDept = service.selectFromEmployeeByDeptTitle(inputView.readDeptTitle("찾고자 하는 사원의 부서명을 입력해주세요 : "));
+				List<Employee> employeesByDept = service.selectFromEmployeeByDeptTitle(inputView.readDeptTitle());
 				outputView.printEmployees(employeesByDept);
 				break;
 			case 2:
-				List<Employee> employeesByJob = service.selectFromEmployeeByJobName(inputView.readJobName("찾고자 하는 사원의 직책명을 입력해주세요 : "));
+				List<Employee> employeesByJob = service.selectFromEmployeeByJobName(inputView.readJobName());
 				outputView.printEmployees(employeesByJob);
 				break;
 			case 3:
@@ -91,7 +91,7 @@ public class Controller {
 				break;
 			case 4:
 				int salary = inputView.readSalary();
-				SalaryConditions searchCondition = getSalaryCondition(() -> inputView.readSearchCondition());
+				SearchConditions searchCondition = getSalaryCondition(() -> inputView.readSearchCondition());
 				List<Employee> employeesBySalary = service.selectFromEmployeeBySalary(salary, searchCondition);
 				outputView.printEmployees(employeesBySalary);
 				break;
@@ -116,13 +116,12 @@ public class Controller {
 			case 2:
 				inputView.header("======== 부서 정보 수정 ========");
 				Department departmentToBeUpdated = inputView.readDepartmentToBeUpdated();
-				outputView.printResult(service.updateDepartment(departmentToBeUpdated), "부서 정보 수정 성공", "부서 정보 수정 실패");
+				outputView.printResult(service.updateDepartmentBy(departmentToBeUpdated), "부서 정보 수정 성공", "부서 정보 수정 실패");
 				break;
 			case 3:
 				inputView.header("========== 부서 삭제 ==========");
-				String deptTitle = inputView.readDeptTitle("삭제하려는 부서명을 입력해주세요 : ");
-				int numberOfDepartment = service.deleteFromDepartment(deptTitle);
-				outputView.printResult(numberOfDepartment, String.format("%d개의 부서 삭제 성공", numberOfDepartment), "부서 삭제 실패");
+				String deptId = inputView.readDeptId();
+				outputView.printResult(service.deleteFromDepartmentBy(deptId), "부서 삭제 성공", "부서 삭제 실패");
 				break;
 			case 0:
 				outputView.printMsg(BACK_TO_MAIN_MENU);
@@ -145,12 +144,12 @@ public class Controller {
 			case 2:
 				inputView.header("======== 직책 정보 수정 ========");
 				Job JobToBeUpdated = inputView.readJobToBeUpdated();
-				outputView.printResult(service.updateJob(JobToBeUpdated), "직책 정보 수정 성공", "직책 정보 수정 실패");
+				outputView.printResult(service.updateJobBy(JobToBeUpdated), "직책 정보 수정 성공", "직책 정보 수정 실패");
 				break;
 			case 3:
 				inputView.header("========== 직책 삭제 ==========");
-				String jobName = inputView.readJobName("삭제하려는 직책명을 입력해주세요 : ");
-				outputView.printResult(service.deleteFromJob(jobName), "직책 삭제 성공", "직책 삭제 실패");
+				String JobCode = inputView.readJobCode();
+				outputView.printResult(service.deleteFromJobBy(JobCode), "직책 삭제 성공", "직책 삭제 실패");
 				break;
 			case 0:
 				outputView.printMsg(BACK_TO_MAIN_MENU);
@@ -162,9 +161,9 @@ public class Controller {
 		}
 	}
 	
-	private SalaryConditions getSalaryCondition(Supplier<String> inputReader) {
+	private SearchConditions getSalaryCondition(Supplier<String> inputReader) {
 		try {
-			return SalaryConditions.getSalaryConditionBy(inputReader.get());
+			return SearchConditions.getBy(inputReader.get());
 		} catch (IllegalArgumentException e) {
 			System.out.println(e.getMessage());
 			return getSalaryCondition(inputReader);

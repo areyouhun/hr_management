@@ -10,24 +10,21 @@ import java.sql.Statement;
 import java.util.Properties;
 
 public class JdbcTemplate {
-	private static final String KEY_DRIVER = "driver";
-	private static final String KEY_URL = "url";
-	private static final String KEY_USER = "user";
-	private static final String KEY_PW = "pw";
+	private static final String DRIVER_FILE_PATH = "/driver.properties";
 
 	public static Connection getConnection() {
-		final Properties driver = new Properties();
-		final String path = JdbcTemplate.class.getResource("/driver.properties").getPath();
+		Properties driver = new Properties();
+		String path = JdbcTemplate.class.getResource(DRIVER_FILE_PATH).getPath();
 		Connection conn = null;
 		
 		try (FileReader fileReader = new FileReader(path)) {
 			driver.load(fileReader);
-			Class.forName(driver.getProperty(KEY_DRIVER));
+			Class.forName(driver.getProperty("driver"));
 			
 			conn = DriverManager.getConnection(
-					driver.getProperty(KEY_URL), 
-					driver.getProperty(KEY_USER),
-					driver.getProperty(KEY_PW));
+					driver.getProperty("url"), 
+					driver.getProperty("user"),
+					driver.getProperty("pw"));
 			conn.setAutoCommit(false);
 		} catch (IOException e) {
 			e.printStackTrace();
