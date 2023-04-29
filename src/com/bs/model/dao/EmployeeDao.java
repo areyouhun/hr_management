@@ -1,7 +1,5 @@
 package com.bs.model.dao;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,44 +11,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.bs.common.Constants;
 import com.bs.common.JdbcTemplate;
-import com.bs.common.SalaryConditions;
+import com.bs.common.PropertiesGenerator;
+import com.bs.common.SearchConditions;
 import com.bs.model.dto.Employee;
 
 public class EmployeeDao {
-	private static final String SQL_PATH = "/sql/board/board_sql.properties";
-	private static final String SELECT_ALL_FROM_EMPLOYEE = "selectAllFromEmployee";
-	private static final String SELECT_ALL_FROM_SAL_GRADE = "selectAllFromSalGrade";
-	private static final String INSERT_INTO_EMPLOYEES = "insertIntoEmployees";
+	private static final String INSERT_INTO_EMPLOYEE = "insertIntoEmployee";
 	private static final String UPDATE_EMPLOYEE = "updateEmployee";
-	private static final String DELETE_FROM_EMPLOYEE = "deleteFromEmployee";
-	private static final String WHERE = "where";
-	private static final String COL = "#COL";
-	private static final String SYNTAX = "#SYNTAX";
+	private static final String TABLE_EMPLOYEE = "EMPLOYEE";
+	private static final String TABLE_SAL_GRADE = "SAL_GRADE";
 	private static final String COL_DEPT_CODE = "DEPT_CODE";
 	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String COL_EMP_NAME = "EMP_NAME";
+	private static final String COL_EMP_ID = "EMP_ID";
 	private static final String COL_SALARY = "SALARY";
-	private static final String EQUAL = "=";
-	private static final String LIKE = "LIKE";
-	private static final String IN = "IN";
-	private static final String BETWEEN = "BETWEEN";
-	private static final String MIN_SAL_AND_MAX_SAL = "MIN_SAL AND MAX_SAL";
+	private static final String COL_SAL_LEVEL = "SAL_LEVEL";
+	private static final String COL_MIN_SAL = "MIN_SAL";
+	private static final String COL_MAX_SAL = "MAX_SAL";
 	
 	private final Properties sql;
 	
 	public EmployeeDao() {
 		sql = new Properties();
-		loadProperties(sql);
-	}
-	
-	private void loadProperties(Properties prop) {
-		final String path = EmployeeDao.class.getResource(SQL_PATH).getPath();
-		try (FileReader fileReader = new FileReader(path)) {
-			prop.load(fileReader);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		PropertiesGenerator.load(sql);
 	}
 
 	public List<Employee> selectAllEmployees(Connection conn) {
@@ -58,8 +43,11 @@ public class EmployeeDao {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM);
+		query = query.replace(Constants.TABLE, TABLE_EMPLOYEE);
+		
 		try {
-			pstmt = conn.prepareStatement(sql.getProperty(SELECT_ALL_FROM_EMPLOYEE));
+			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
@@ -74,60 +62,25 @@ public class EmployeeDao {
 		return employees;
 	}
 	
-	public List<Employee> selectEmployeesBydeptCode(Connection conn, List<String> deptCodes) {
+	public List<Employee> selectEmployeesByIdentifiers(Connection conn, List<String> identifiers, String column) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Employee> employees = new ArrayList<>();
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
-		String placeHolders = String.join(",", Collections.nCopies(deptCodes.size(), "?"));
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		String placeHolders = String.join(",", Collections.nCopies(identifiers.size(), "?"));
 		if (placeHolders.isEmpty()) {
 			return employees;
 		}
 		
-		query = query.replace(COL, COL_DEPT_CODE);
-		query = query.replace(SYNTAX, IN);
+		query = replace(query, TABLE_EMPLOYEE, column, Constants.IN);
 		query = query.replace("?", "(" + placeHolders + ")");
 		
 		try {
 			pstmt = conn.prepareStatement(query);
 			int index = 1;
-			for (String deptCode : deptCodes) {
-				pstmt.setString(index++, deptCode);
-			}
-			rs = pstmt.executeQuery();
-			
-			while (rs.next()) {
-				employees.add(generateEmployee(rs));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			JdbcTemplate.close(rs);
-			JdbcTemplate.close(pstmt);
-		}
-		return employees;
-	}
-	
-	public List<Employee> selectEmployeesByJobCodes(Connection conn, List<String>jobCodes) {
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		List<Employee> employees = new ArrayList<>();
-		
-		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
-		String placeHolders = String.join(",", Collections.nCopies(jobCodes.size(), "?"));
-		query = query.replace("#COL", COL_JOB_CODE);
-		query = query.replace("#SYNTAX", IN);
-		query = query.replace("?", "(" + placeHolders + ")");
-		if (placeHolders.isEmpty()) {
-			return employees;
-		}
-		
-		try {
-			pstmt = conn.prepareStatement(query);
-			int index = 1;
-			for (String jobCode : jobCodes) {
-				pstmt.setString(index++, jobCode);
+			for (String identifier : identifiers) {
+				pstmt.setString(index++, identifier);
 			}
 			rs = pstmt.executeQuery();
 			
@@ -148,9 +101,8 @@ public class EmployeeDao {
 		ResultSet rs = null;
 		List<Employee> employees = new ArrayList<>();
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
-		query = query.replace("#COL", COL_EMP_NAME);
-		query = query.replace("#SYNTAX", LIKE);
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, TABLE_EMPLOYEE, COL_EMP_NAME, Constants.LIKE);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -169,14 +121,13 @@ public class EmployeeDao {
 		return employees;
 	}
 	
-	public List<Employee> selectEmployeesBySalary(Connection conn, int salary, SalaryConditions condition) {
+	public List<Employee> selectEmployeesBySalary(Connection conn, int salary, SearchConditions condition) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<Employee> employees = new ArrayList<>();
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_EMPLOYEE) + " " + sql.getProperty(WHERE);
-		query = query.replace("#COL", COL_SALARY);
-		query = query.replace("#SYNTAX", condition.getSign());
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, TABLE_EMPLOYEE, COL_SALARY, condition.getSign());
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -196,11 +147,11 @@ public class EmployeeDao {
 		return employees;
 	} 
 	
-	public int insertEmployee(Connection conn, Employee employee, Map<String, String> codes) {
+	public int insertIntoEmployee(Connection conn, Employee employee, Map<String, String> codes) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
-		String query = sql.getProperty(INSERT_INTO_EMPLOYEES);
+		String query = sql.getProperty(INSERT_INTO_EMPLOYEE);
 		try {
 			pstmt = conn.prepareStatement(query);
 			pstmt.setString(1, employee.getEmpId());
@@ -208,8 +159,8 @@ public class EmployeeDao {
 			pstmt.setString(3, employee.getEmpNo());
 			pstmt.setString(4, employee.getEmail());
 			pstmt.setString(5, employee.getPhone());
-			pstmt.setString(6, codes.get("DEPT_CODE"));
-			pstmt.setString(7, codes.get("JOB_CODE"));
+			pstmt.setString(6, codes.get(COL_DEPT_CODE));
+			pstmt.setString(7, codes.get(COL_JOB_CODE));
 			pstmt.setString(8, employee.getSalLevel());
 			pstmt.setInt(9, employee.getSalary());
 			pstmt.setDouble(10, employee.getBonus());
@@ -227,7 +178,7 @@ public class EmployeeDao {
 		return result;
 	}
 	
-	public int updateEmployee(Connection conn, Employee employee) {
+	public int updateEmployeeBy(Connection conn, Employee employee) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
@@ -250,11 +201,11 @@ public class EmployeeDao {
 		return result;
 	}
 	
-	public void updateDeptCode(Connection conn, Employee employee, String deptCode) {
+	public void updateDeptCode(Employee employee, String deptCode) {
 		employee.setDeptCode(deptCode);
 	}
 	
-	public void updateJobCode(Connection conn, Employee employee, String jobCode) {
+	public void updateJobCode(Employee employee, String jobCode) {
 		employee.setJobCode(jobCode);
 	}
 	
@@ -267,17 +218,19 @@ public class EmployeeDao {
 		ResultSet rs = null;
 		String level = "";
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_SAL_GRADE) + " " + sql.getProperty(WHERE);
-		query = query.replace("#COL", String.valueOf(employee.getSalary()));
-		query = query.replace("#SYNTAX", BETWEEN);
-		query = query.replace("?", MIN_SAL_AND_MAX_SAL);
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, TABLE_SAL_GRADE, 
+						String.valueOf(employee.getSalary()), 
+						String.format(Constants.BETWEEN, COL_MIN_SAL, COL_MAX_SAL));
+//		query = query.replace(" ?", "");
+		query = query.replace("?", "");
 		
 		try {
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			
 			if (rs.next()) {
-				level = rs.getString("SAL_LEVEL");
+				level = rs.getString(COL_SAL_LEVEL);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -288,11 +241,13 @@ public class EmployeeDao {
 		return level;
 	}
 	
-	public int deleteEmployee(Connection conn, String empId) {
+	public int deleteFromEmployeeBy(Connection conn, String empId) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
-		String query = sql.getProperty(DELETE_FROM_EMPLOYEE);
+		String query = sql.getProperty(Constants.DELETE_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, TABLE_EMPLOYEE, COL_EMP_ID, Constants.EQUAL);
+		
 		try {
 			pstmt = conn.prepareStatement(query);
 			pstmt.setString(1, empId);
@@ -301,6 +256,13 @@ public class EmployeeDao {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	private String replace(String query, String table, 
+						String column, String operator) {
+		query = query.replace(Constants.TABLE, table);
+		query = query.replace(Constants.COL, column);
+		return query.replace(Constants.OPERATOR, operator);
 	}
 
 	private Employee generateEmployee(ResultSet rs) throws SQLException {

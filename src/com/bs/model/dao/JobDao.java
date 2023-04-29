@@ -1,7 +1,5 @@
 package com.bs.model.dao;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,49 +8,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.bs.common.Constants;
 import com.bs.common.JdbcTemplate;
-import com.bs.model.dto.Department;
+import com.bs.common.PropertiesGenerator;
 import com.bs.model.dto.Employee;
 import com.bs.model.dto.Job;
 
 public class JobDao {
-	private static final String SQL_PATH = "/sql/board/board_sql.properties";
-	private static final String SELECT_ALL_FROM_JOB = "selectAllFromJob";
 	private static final String INSERT_INTO_JOB = "insertIntoJob";
 	private static final String UPDATE_JOB = "updateJob";
-	private static final String DELETE_FROM = "deleteFrom";
-	private static final String WHERE = "where";
-	private static final String COL = "#COL";
-	private static final String TABLE_NAME = "JOB";
-	private static final String SYNTAX = "#SYNTAX";
+	private static final String TABLE_JOB = "JOB";
 	private static final String COL_JOB_CODE = "JOB_CODE";
 	private static final String COL_JOB_NAME = "JOB_NAME";
-	private static final String EQUAL = "=";
-	private static final String LIKE = "LIKE";
 	
 	private final Properties sql;
 	
 	public JobDao() {
 		sql = new Properties();
-		loadProperties(sql);
-	}
-	
-	private void loadProperties(Properties prop) {
-		final String path = JobDao.class.getResource(SQL_PATH).getPath();
-		try (FileReader fileReader = new FileReader(path)) {
-			prop.load(fileReader);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		PropertiesGenerator.load(sql);
 	}
 	
 	public void matchWithEmployee(Connection conn, Employee employee) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_JOB) + " " + sql.getProperty(WHERE);
-		query = query.replace(COL, COL_JOB_CODE);
-		query = query.replace(SYNTAX, EQUAL);
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, COL_JOB_CODE, Constants.EQUAL);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -70,14 +51,13 @@ public class JobDao {
 		}
 	}
 	
-	public List<String> findJobCodeByJobName(Connection conn, String jobName) {
+	public List<String> findJobCodeBy(Connection conn, String jobName) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<String> jobCodes = new ArrayList<>();
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_JOB) + " " + sql.getProperty(WHERE);
-		query = query.replace("#COL", COL_JOB_NAME);
-		query = query.replace("#SYNTAX", LIKE);
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, COL_JOB_NAME, Constants.LIKE);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -85,7 +65,7 @@ public class JobDao {
 			rs = pstmt.executeQuery();
 			
 			while (rs.next()) {
-				jobCodes.add(rs.getString("JOB_CODE"));
+				jobCodes.add(rs.getString(COL_JOB_CODE));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -96,7 +76,7 @@ public class JobDao {
 		return jobCodes;
 	}
 	
-	public int insertJob(Connection conn, Job job) {
+	public int insertIntoJob(Connection conn, Job job) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
@@ -114,7 +94,7 @@ public class JobDao {
 		return result;
 	}
 	
-	public int updateJob(Connection conn, Job job) {
+	public int updateJobBy(Connection conn, Job job) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
@@ -132,14 +112,12 @@ public class JobDao {
 		return result;
 	}
 	
-	public int deleteJob(Connection conn, String jobCode) {
+	public int deleteFromJobBy(Connection conn, String jobCode) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
-		String query = sql.getProperty(DELETE_FROM) + " " + sql.getProperty(WHERE);
-		query = query.replace("#TABLE", TABLE_NAME);
-		query = query.replace("#COL", COL_JOB_CODE);
-		query = query.replace("#SYNTAX", EQUAL);
+		String query = sql.getProperty(Constants.DELETE_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, COL_JOB_CODE, Constants.EQUAL);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -151,6 +129,12 @@ public class JobDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return result;
+	}
+	
+	private String replace(String query, String column, String operator) {
+		query = query.replace(Constants.TABLE, TABLE_JOB);
+		query = query.replace(Constants.COL, column);
+		return query.replace(Constants.OPERATOR, operator);
 	}
 
 	private Job generateJob(ResultSet rs) throws SQLException {

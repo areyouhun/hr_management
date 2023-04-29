@@ -43,12 +43,12 @@ public class InputView {
 		return Integer.parseInt(readInput("번호 입력 : "));
 	}
 	
-	public String readDeptTitle(String msg) {
-		return readInput(msg);
+	public String readDeptTitle() {
+		return readInput("찾고자 하는 사원의 부서명을 입력해주세요 : ");
 	}
 	
-	public String readJobName(String msg) {
-		return readInput(msg);
+	public String readJobName() {
+		return readInput("찾고자 하는 사원의 직책명을 입력해주세요 : ");
 	}
 	
 	public String readName() {
@@ -138,6 +138,14 @@ public class InputView {
 	
 	public String readEmpId() {
 		return readInput("삭제하려는 사원의 사원번호를 입력해주세요 : ");
+	}
+	
+	public String readDeptId() {
+		return readInput("삭제하려는 부서의 부서코드를 입력해주세요 : ");
+	}
+	
+	public String readJobCode() {
+		return readInput("삭제하려는 직책의 직책코드를 입력해주세요 : ");
 	}
 	
 	public int readSubMenuForDept() {

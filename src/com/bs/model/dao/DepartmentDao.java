@@ -1,7 +1,5 @@
 package com.bs.model.dao;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,48 +9,32 @@ import java.util.List;
 import java.util.Properties;
 
 import com.bs.common.JdbcTemplate;
+import com.bs.common.PropertiesGenerator;
+import com.bs.common.Constants;
 import com.bs.model.dto.Department;
 import com.bs.model.dto.Employee;
 
 public class DepartmentDao {
-	private static final String SQL_PATH = "/sql/board/board_sql.properties";
-	private static final String SELECT_ALL_FROM_DEPT = "selectAllFromDept";
-	private static final String INSERT_INTO_DEPARTMENT = "insertIntoDepartments";
+	private static final String INSERT_INTO_DEPARTMENT = "insertIntoDepartment";
 	private static final String UPDATE_DEPARTMENT = "updateDepartment";
-	private static final String DELETE_FROM = "deleteFrom";
-	private static final String WHERE = "where";
-	private static final String COL = "#COL";
-	private static final String TABLE_NAME = "DEPARTMENT";
-	private static final String SYNTAX = "#SYNTAX";
+	private static final String TABLE_DEPARTMENT = "DEPARTMENT";
 	private static final String COL_DEPT_ID = "DEPT_ID";
 	private static final String COL_DEPT_TITLE = "DEPT_TITLE";
 	private static final String COL_LOCATION_ID = "LOCATION_ID";
-	private static final String EQUAL = "=";
-	private static final String LIKE = "LIKE";
 	
 	private final Properties sql;
 	
 	public DepartmentDao() {
 		sql = new Properties();
-		loadProperties(sql);
+		PropertiesGenerator.load(sql);
 	}
 	
-	private void loadProperties(Properties properties) {
-		final String path = EmployeeDao.class.getResource(SQL_PATH).getPath();
-		try (FileReader fileReader = new FileReader(path)) {
-			properties.load(fileReader);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public void matchWithEmployee(Connection conn, Employee employee) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_DEPT) + " " + sql.getProperty(WHERE);
-		query = query.replace(COL, COL_DEPT_ID);
-		query = query.replace(SYNTAX, EQUAL);
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, COL_DEPT_ID, Constants.EQUAL);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -70,14 +52,13 @@ public class DepartmentDao {
 		}
 	}
 	
-	public List<String> findDeptIdByDeptTitle(Connection conn, String deptTitle) {
+	public List<String> findDeptIdBy(Connection conn, String deptTitle) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		List<String> deptIds = new ArrayList<>();
 		
-		String query = sql.getProperty(SELECT_ALL_FROM_DEPT) + " " + sql.getProperty(WHERE);
-		query = query.replace(COL, COL_DEPT_TITLE);
-		query = query.replace(SYNTAX, LIKE); 
+		String query = sql.getProperty(Constants.SELECT_ALL_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, COL_DEPT_TITLE, Constants.LIKE);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -85,7 +66,7 @@ public class DepartmentDao {
 			rs = pstmt.executeQuery();
 			
 			while (rs.next()) {
-				deptIds.add(rs.getString("DEPT_ID"));
+				deptIds.add(rs.getString(COL_DEPT_ID));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -96,7 +77,7 @@ public class DepartmentDao {
 		return deptIds;
 	}
 	
-	public int insertDepartment(Connection conn, Department department) {
+	public int insertIntoDepartment(Connection conn, Department department) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
@@ -115,7 +96,7 @@ public class DepartmentDao {
 		return result;
 	}
 	
-	public int updateDepartment(Connection conn, Department department) {
+	public int updateDepartmentBy(Connection conn, Department department) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
@@ -133,14 +114,12 @@ public class DepartmentDao {
 		return result;
 	}
 	
-	public int deleteDepartment(Connection conn, String deptId) {
+	public int deleteFromDepartmentBy(Connection conn, String deptId) {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
-		String query = sql.getProperty(DELETE_FROM) + " " + sql.getProperty(WHERE);
-		query = query.replace("#TABLE", TABLE_NAME);
-		query = query.replace("#COL", COL_DEPT_ID);
-		query = query.replace("#SYNTAX", EQUAL);
+		String query = sql.getProperty(Constants.DELETE_FROM) + " " + sql.getProperty(Constants.WHERE);
+		query = replace(query, COL_DEPT_ID, Constants.EQUAL);
 		
 		try {
 			pstmt = conn.prepareStatement(query);
@@ -152,6 +131,12 @@ public class DepartmentDao {
 			JdbcTemplate.close(pstmt);
 		}
 		return result;
+	}
+	
+	private String replace(String query, String column, String operator) {
+		query = query.replace(Constants.TABLE, TABLE_DEPARTMENT);
+		query = query.replace(Constants.COL, column);
+		return query.replace(Constants.OPERATOR, operator);
 	}
 	
 	private Department generateDepartment(ResultSet rs) throws SQLException {
